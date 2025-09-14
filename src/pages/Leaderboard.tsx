@@ -48,27 +48,27 @@ const Leaderboard = () => {
   }, [profile]);
 
   // Show loading while checking auth
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-//         <div className="text-center">
-//           <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
-//             <Leaf className="text-white animate-pulse" size={32} />
-//           </div>
-//           <p className="text-gray-600">Loading...</p>
-//         </div>
-//       </div>
-//     );
-//   }
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
+            <Leaf className="text-white animate-pulse" size={32} />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-//   // Don't render if no user
-//   if (!user || !profile) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <p className="text-gray-600">No profile found. Please log in again.</p>
-//       </div>
-//     );
-//   }
+  // Don't render if no user
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">No profile found. Please log in again.</p>
+      </div>
+    );
+  }
 
   const leaderboard = [
     { rank: 1, name: 'Arjun Patel', school: 'Kendriya Vidyalaya', points: 1580, location: 'Ahmedabad' },
