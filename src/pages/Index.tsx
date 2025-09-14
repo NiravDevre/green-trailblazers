@@ -1,18 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, Leaf, Users, BookOpen, Camera, MapPin, Star, Award, Target, TrendingUp, Menu, X, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Trophy, Leaf, Users, BookOpen, Camera, MapPin, Star, Award, Target, TrendingUp, MessageCircle, LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import ChatBot from '@/components/ChatBot';
 
 const Index = () => {
+  const { user, profile, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState({
-    name: 'Priya Sharma',
-    school: 'Delhi Public School, Bharuch',
-    ecoPoints: 1250,
-    level: 'Green Guardian',
-    badges: ['Water Saver', 'Waste Warrior', 'Tree Lover'],
-    completedChallenges: 15,
-    rank: 3
-  });
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
+            <Leaf className="text-white animate-pulse" size={32} />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if no user
+  if (!user || !profile) {
+    return null;
+  }
+
+  const userProfile = {
+    name: profile.full_name || 'User',
+    school: profile.school_name || profile.organization_name || 'Not specified',
+    ecoPoints: profile.eco_points,
+    level: profile.level,
+    badges: profile.badges,
+    completedChallenges: profile.completed_challenges,
+    rank: 3,
+    role: profile.role
+  };
 
   const [challenges, setChallenges] = useState([
     {
@@ -122,14 +155,7 @@ const Index = () => {
         : challenge
     ));
     
-    const challenge = challenges.find(c => c.id === challengeId);
-    if (challenge) {
-      setUserProfile(prev => ({
-        ...prev,
-        ecoPoints: prev.ecoPoints + challenge.points,
-        completedChallenges: prev.completedChallenges + 1
-      }));
-    }
+    // Note: In a real app, you'd update the user's eco points in the database here
   };
 
   const DashboardView = () => (
@@ -532,8 +558,52 @@ const Index = () => {
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
     { id: 'challenges', label: 'Challenges', icon: Target },
     { id: 'learning', label: 'Learn', icon: BookOpen },
-    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy }
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: 'chat', label: 'AI Chat', icon: MessageCircle }
   ];
+
+  const ChatView = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <MessageCircle className="text-primary" size={32} />
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold">AI Environmental Assistant</h2>
+          <p className="text-muted-foreground">Get personalized environmental guidance and answers</p>
+        </div>
+      </div>
+      
+      <div className="card-eco p-6 md:p-8">
+        <div className="text-center py-12">
+          <div className="bg-primary/10 p-6 rounded-full w-24 h-24 mx-auto mb-6">
+            <MessageCircle className="text-primary w-12 h-12" />
+          </div>
+          <h3 className="text-xl font-bold mb-4">AI Chat Available in Bottom Right</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Click the chat button in the bottom right corner to start a conversation with our AI environmental assistant. 
+            Get instant answers about sustainability, climate action, and environmental challenges!
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            <div className="bg-muted/50 p-4 rounded-xl">
+              <h4 className="font-semibold mb-2">🌱 Environmental Tips</h4>
+              <p className="text-sm text-muted-foreground">Get personalized sustainability advice</p>
+            </div>
+            <div className="bg-muted/50 p-4 rounded-xl">
+              <h4 className="font-semibold mb-2">📚 Learning Support</h4>
+              <p className="text-sm text-muted-foreground">Ask questions about lessons and concepts</p>
+            </div>
+            <div className="bg-muted/50 p-4 rounded-xl">
+              <h4 className="font-semibold mb-2">🎯 Challenge Help</h4>
+              <p className="text-sm text-muted-foreground">Get guidance on environmental challenges</p>
+            </div>
+            <div className="bg-muted/50 p-4 rounded-xl">
+              <h4 className="font-semibold mb-2">🌍 Climate Action</h4>
+              <p className="text-sm text-muted-foreground">Learn about climate solutions</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-primary/5">
@@ -557,8 +627,17 @@ const Index = () => {
                 <div className="text-xs text-muted-foreground">{userProfile.school}</div>
               </div>
               <div className="w-10 h-10 card-gradient rounded-full flex items-center justify-center text-white font-bold text-lg shadow-[var(--shadow-soft)]">
-                P
+                {userProfile.name.charAt(0).toUpperCase()}
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={signOut}
+                className="hidden sm:flex text-muted-foreground hover:text-foreground"
+                title="Sign Out"
+              >
+                <LogOut size={20} />
+              </Button>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
@@ -594,16 +673,24 @@ const Index = () => {
       <nav className="hidden md:block bg-surface/95 backdrop-blur-md border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-2 py-4 overflow-x-auto">
-            {tabs.map((tab) => (
-              <TabButton
-                key={tab.id}
-                id={tab.id}
-                label={tab.label}
-                icon={tab.icon}
-                active={activeTab === tab.id}
-                onClick={setActiveTab}
-              />
-            ))}
+              {tabs.map((tab) => (
+                <TabButton
+                  key={tab.id}
+                  id={tab.id}
+                  label={tab.label}
+                  icon={tab.icon}
+                  active={activeTab === tab.id}
+                  onClick={setActiveTab}
+                />
+              ))}
+              <Button
+                variant="ghost"
+                onClick={signOut}
+                className="flex items-center gap-2 w-full justify-start text-muted-foreground hover:text-foreground mt-4"
+              >
+                <LogOut size={20} />
+                <span>Sign Out</span>
+              </Button>
           </div>
         </div>
       </nav>
@@ -614,7 +701,11 @@ const Index = () => {
         {activeTab === 'challenges' && <ChallengesView />}
         {activeTab === 'learning' && <LearningView />}
         {activeTab === 'leaderboard' && <LeaderboardView />}
+        {activeTab === 'chat' && <ChatView />}
       </main>
+
+      {/* AI Chatbot */}
+      <ChatBot />
     </div>
   );
 };
