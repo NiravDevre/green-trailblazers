@@ -4,49 +4,14 @@ import { Trophy, Leaf, Users, BookOpen, Camera, MapPin, Star, Award, Target, Tre
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import ChatBot from '@/components/ChatBot';
+import { verifyPlanting } from "../services/api";
 
 const Index = () => {
   const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  // Show loading while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
-            <Leaf className="text-white animate-pulse" size={32} />
-          </div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Don't render if no user
-  if (!user || !profile) {
-    return null;
-  }
-
-  const userProfile = {
-    name: profile.full_name || 'User',
-    school: profile.school_name || profile.organization_name || 'Not specified',
-    ecoPoints: profile.eco_points,
-    level: profile.level,
-    badges: profile.badges,
-    completedChallenges: profile.completed_challenges,
-    rank: 3,
-    role: profile.role
-  };
-
   const [challenges, setChallenges] = useState([
     {
       id: 1,
@@ -113,6 +78,64 @@ const Index = () => {
     }
   ]);
 
+  // ✅ Safe defaults
+  const [userProfile, setUserProfile] = useState({
+    name: 'User',
+    school: 'Not specified',
+    ecoPoints: 0,
+    level: 1,
+    badges: [],
+    completedChallenges: 0,
+    rank: 3,
+    role: 'student'
+  });
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  // ✅ Update profile state when data is loaded
+  useEffect(() => {
+    if (profile) {
+      setUserProfile({
+        name: profile.full_name || 'User',
+        school: profile.school_name || profile.organization_name || 'Not specified',
+        ecoPoints: profile.eco_points || 0,
+        level: Number(profile.level) || 1,
+        badges: profile.badges || [],
+        completedChallenges: profile.completed_challenges || 0,
+        rank: 3,
+        role: profile.role || 'student'
+      });
+    }
+  }, [profile]);
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
+            <Leaf className="text-white animate-pulse" size={32} />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if no user
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">No profile found. Please log in again.</p>
+      </div>
+    );
+  }
+
   const leaderboard = [
     { rank: 1, name: 'Arjun Patel', school: 'Kendriya Vidyalaya', points: 1580, location: 'Ahmedabad' },
     { rank: 2, name: 'Sneha Gupta', school: 'DPS Vadodara', points: 1420, location: 'Vadodara' },
@@ -149,14 +172,44 @@ const Index = () => {
   );
 
   const completeChallenge = (challengeId) => {
-    setChallenges(challenges.map(challenge => 
-      challenge.id === challengeId 
-        ? { ...challenge, completed: true }
-        : challenge
-    ));
-    
-    // Note: In a real app, you'd update the user's eco points in the database here
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const result = await verifyPlanting(file);
+
+      if (result.success && result.verified) {
+        // Update challenge state
+        setChallenges((prev) =>
+          prev.map((challenge) =>
+            challenge.id === challengeId && !challenge.completed
+              ? { ...challenge, completed: true }
+              : challenge
+          )
+        );
+
+        // Find the completed challenge
+        const completedChallenge = challenges.find((c) => c.id === challengeId);
+
+        // ✅ Update ecoPoints in userProfile
+        if (completedChallenge && !completedChallenge.completed) {
+          setUserProfile((prev) => ({
+            ...prev,
+            ecoPoints: prev.ecoPoints + completedChallenge.points,
+          }));
+        }
+      } else {
+        console.log("❌ Not valid planting photo:", result);
+      }
+    };
+
+    input.click();
   };
+
 
   const DashboardView = () => (
     <div className="space-y-6">
@@ -277,12 +330,12 @@ const Index = () => {
               <button className="btn-outline">
                 Learn More
               </button>
-              <button 
-                onClick={() => completeChallenge(1)}
-                className="btn-eco flex items-center gap-2"
-              >
-                <Camera size={16} />
-                Take Challenge
+              <button
+                onClick={() => completeChallenge(challenges[0].id)}
+                disabled={challenges[0].completed}
+                className={`btn-eco ${challenges[0].completed ? "opacity-50 cursor-not-allowed" : ""}`}
+              > <Camera size={16} />
+                {challenges[0].completed ? "✅ Completed" : "Take Challenge"}
               </button>
             </div>
           </div>
@@ -381,13 +434,13 @@ const Index = () => {
                     <button className="btn-outline flex-1 sm:flex-none">
                       Learn More
                     </button>
-                    <button 
-                      onClick={() => completeChallenge(challenge.id)}
-                      className="btn-eco flex items-center gap-2 flex-1 sm:flex-none"
-                    >
-                      <Camera size={16} />
-                      Submit Evidence
-                    </button>
+                    <button
+                    onClick={() => completeChallenge(challenge.id)}
+                    disabled={challenge.completed}
+                    className={`btn-eco ${challenge.completed ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    {challenge.completed ? "✅ Completed" : "Complete Challenge"}
+                  </button>
                   </div>
                 )}
               </div>
@@ -559,7 +612,7 @@ const Index = () => {
     { id: 'challenges', label: 'Challenges', icon: Target },
     { id: 'learning', label: 'Learn', icon: BookOpen },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'chat', label: 'AI Chat', icon: MessageCircle }
+    { id: 'chat', label: 'Chatbot', icon: MessageCircle }
   ];
 
   const ChatView = () => (
