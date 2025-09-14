@@ -14,7 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          response: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          response?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          response?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          badges: string[] | null
+          bio: string | null
+          completed_challenges: number
+          created_at: string
+          eco_points: number
+          full_name: string
+          grade_level: string | null
+          id: string
+          level: string
+          location: string | null
+          organization_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          school_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          badges?: string[] | null
+          bio?: string | null
+          completed_challenges?: number
+          created_at?: string
+          eco_points?: number
+          full_name: string
+          grade_level?: string | null
+          id?: string
+          level?: string
+          location?: string | null
+          organization_name?: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          school_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          badges?: string[] | null
+          bio?: string | null
+          completed_challenges?: number
+          created_at?: string
+          eco_points?: number
+          full_name?: string
+          grade_level?: string | null
+          id?: string
+          level?: string
+          location?: string | null
+          organization_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          school_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +103,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "student" | "institute" | "company" | "ngo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +230,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["student", "institute", "company", "ngo"],
+    },
   },
 } as const
