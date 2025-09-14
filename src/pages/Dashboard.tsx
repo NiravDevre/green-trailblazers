@@ -97,14 +97,14 @@ const Dashboard = () => {
     );
   }
 
-  // Don't render if no user
-  if (!user || !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">No profile found. Please log in again.</p>
-      </div>
-    );
-  }
+//   // Don't render if no user
+//   if (!user || !profile) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <p className="text-gray-600">No profile found. Please log in again.</p>
+//       </div>
+//     );
+//   }
 
   const TabButton = ({ id, label, icon: Icon, active, onClick }) => (
     <button

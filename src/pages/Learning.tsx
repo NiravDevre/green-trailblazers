@@ -94,28 +94,28 @@ const Learning = () => {
     }
   }, [profile]);
 
-  // Show loading while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
-            <Leaf className="text-white animate-pulse" size={32} />
-          </div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+//   // Show loading while checking auth
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+//         <div className="text-center">
+//           <div className="bg-green-600 p-4 rounded-lg mb-4 w-fit mx-auto">
+//             <Leaf className="text-white animate-pulse" size={32} />
+//           </div>
+//           <p className="text-gray-600">Loading...</p>
+//         </div>
+//       </div>
+//     );
+//   }
 
-  // Don't render if no user
-  if (!user || !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">No profile found. Please log in again.</p>
-      </div>
-    );
-  }
+//   // Don't render if no user
+//   if (!user || !profile) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <p className="text-gray-600">No profile found. Please log in again.</p>
+//       </div>
+//     );
+//   }
 
   const TabButton = ({ id, label, icon: Icon, active, onClick }) => (
     <button
